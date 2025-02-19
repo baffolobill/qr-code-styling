@@ -148,21 +148,27 @@ export default class QRSVG {
       let width = options.width;
 
       if (gradientOptions || color) {
-        const element = this._window.document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        const elementShape = options.shape === shapeTypes.circle ? "circle" : "rect";
+        const element = this._window.document.createElementNS("http://www.w3.org/2000/svg", elementShape);
         this._backgroundClipPath = this._window.document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
         this._backgroundClipPath.setAttribute("id", `clip-path-background-color-${this._instanceId}`);
         this._defs.appendChild(this._backgroundClipPath);
 
-        if (options.backgroundOptions?.round) {
-          height = width = Math.min(options.width, options.height);
-          element.setAttribute("rx", String((height / 2) * options.backgroundOptions.round));
+        if (options.shape === shapeTypes.circle) {
+          element.setAttribute("cx", String(this._roundSize((options.width) / 2)));
+          element.setAttribute("cy", String(this._roundSize((options.height) / 2)));
+          element.setAttribute("r", String(this._roundSize((options.width) / 2)));
+        } else {
+          if (options.backgroundOptions?.round) {
+            height = width = Math.min(options.width, options.height);
+            element.setAttribute("rx", String((height / 2) * options.backgroundOptions.round));
+          }
+  
+          element.setAttribute("x", String(this._roundSize((options.width - width) / 2)));
+          element.setAttribute("y", String(this._roundSize((options.height - height) / 2)));
+          element.setAttribute("width", String(width));
+          element.setAttribute("height", String(height));
         }
-
-        element.setAttribute("x", String(this._roundSize((options.width - width) / 2)));
-        element.setAttribute("y", String(this._roundSize((options.height - height) / 2)));
-        element.setAttribute("width", String(width));
-        element.setAttribute("height", String(height));
-
         this._backgroundClipPath.appendChild(element);
 
         this._createColor({
