@@ -13,6 +13,7 @@ import gradientTypes from "./constants/gradientTypes";
 export * from "./types";
 
 export {
+  QRCodeStyling,
   dotTypes,
   cornerDotTypes,
   cornerSquareTypes,
@@ -25,4 +26,4 @@ export {
   gradientTypes
 };
 
-export default QRCodeStyling;
+// export default QRCodeStyling;
