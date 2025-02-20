@@ -1,6 +1,7 @@
 const path = require("path");
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const { library } = require("webpack");
 
 const rootPath = path.resolve(__dirname, "./");
 const srcPath = path.resolve(rootPath, "src");
@@ -13,9 +14,13 @@ module.exports = {
     path: tmpPath,
     filename: "qr-code-styling.js",
     globalObject: "this",
-    library: "QRCodeStyling",
-    libraryTarget: "umd",
-    libraryExport: "default"
+    // library: "QRCodeStyling",
+    // libraryTarget: "umd",
+    // libraryExport: "default"
+    library: {
+      name: 'QRCodeStyling',
+      type: 'umd',
+    },
   },
   module: {
     rules: [
