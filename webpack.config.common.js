@@ -2,6 +2,7 @@ const path = require("path");
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const { library } = require("webpack");
+const webpack = require("webpack");
 
 const rootPath = path.resolve(__dirname, "./");
 const srcPath = path.resolve(rootPath, "src");
@@ -33,6 +34,9 @@ module.exports = {
   },
   plugins: [
     new ESLintPlugin(),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
     new FileManagerPlugin({
       events: {
         onEnd: {
