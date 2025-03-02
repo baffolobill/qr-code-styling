@@ -75,7 +75,7 @@ export default class QRCodeStyling {
 
       const svg = this._svg;
       const xml = new this._window.XMLSerializer().serializeToString(svg);
-      const svg64 = btoa(xml);
+      const svg64 = Buffer.from(xml, 'binary').toString('base64');
       const image64 = `data:${getMimeType('svg')};base64,${svg64}`;
 
       if (this._options.nodeCanvas?.loadImage) {
