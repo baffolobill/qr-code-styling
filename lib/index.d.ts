@@ -9,5 +9,6 @@ import qrTypes from "./constants/qrTypes";
 import drawTypes from "./constants/drawTypes";
 import shapeTypes from "./constants/shapeTypes";
 import gradientTypes from "./constants/gradientTypes";
+import sanitizeOptions from "./tools/sanitizeOptions";
 export * from "./types";
-export { QRCodeStyling, dotTypes, cornerDotTypes, cornerSquareTypes, errorCorrectionLevels, errorCorrectionPercents, modes, qrTypes, drawTypes, shapeTypes, gradientTypes };
+export { QRCodeStyling, dotTypes, cornerDotTypes, cornerSquareTypes, errorCorrectionLevels, errorCorrectionPercents, modes, qrTypes, drawTypes, shapeTypes, gradientTypes, sanitizeOptions };
