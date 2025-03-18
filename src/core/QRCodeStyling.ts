@@ -6,7 +6,7 @@ import drawTypes from "../constants/drawTypes";
 
 import defaultOptions, { RequiredOptions } from "./QROptions";
 import sanitizeOptions from "../tools/sanitizeOptions";
-import { FileExtension, QRCode, Options, DownloadOptions, ExtensionFunction, Window } from "../types";
+import { FileExtension, QRCode, Options, DownloadOptions, ExtensionFunction, Window, PluginManager, PluginClass } from "../types";
 import qrcode from "qrcode-generator";
 import getMimeType from "../tools/getMimeType";
 import { Canvas as NodeCanvas, Image } from "canvas";
@@ -22,6 +22,7 @@ export default class QRCodeStyling {
   _svg?: SVGElement;
   _qr?: QRCode;
   _extension?: ExtensionFunction;
+  _pluginManager = new PluginManager<QRCodeStyling>();
   _canvasDrawingPromise?: Promise<void>;
   _svgDrawingPromise?: Promise<void>;
 
@@ -48,10 +49,31 @@ export default class QRCodeStyling {
     const qrSVG = new QRSVG(this._options, this._window);
 
     this._svg = qrSVG.getElement();
-    this._svgDrawingPromise = qrSVG.drawQR(this._qr).then(() => {
+    this._svgDrawingPromise = qrSVG.drawQR(this._qr).then(async () => {
       if (!this._svg) return;
       this._extension?.(qrSVG.getElement(), this._options);
+      await this._setupPlugins();
     });
+  }
+
+  async _setupPlugins(): Promise<void> {
+    await this._pluginManager.unloadAll();
+    for (let pluginConfig of this._options.plugins || []) {
+      // console.error(`Settings up plugin: ${pluginConfig.name} with options: `, pluginConfig.options)
+      const pluginClass = this._pluginManager.getPlugin(pluginConfig.name);
+      // console.error('Found plugin class: ', pluginClass);
+      if (pluginClass) {
+        const plugin = new pluginClass(this);
+        plugin.updateConfig(pluginConfig.options);
+        await this._pluginManager.load(plugin);
+        await plugin.render();
+      }
+    }
+  }
+
+  // registerPlugin(pluginClass: { new(...args: any[]): PluginTemplate<QRCodeStyling> }): void {
+  registerPlugin(pluginClass: any): void {
+    this._pluginManager.register(pluginClass as PluginClass<QRCodeStyling>);
   }
 
   _setupCanvas(): void {

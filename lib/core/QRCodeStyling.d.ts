@@ -1,5 +1,5 @@
 import { RequiredOptions } from "./QROptions";
-import { FileExtension, QRCode, Options, DownloadOptions, ExtensionFunction, Window } from "../types";
+import { FileExtension, QRCode, Options, DownloadOptions, ExtensionFunction, Window, PluginManager } from "../types";
 import { Canvas as NodeCanvas } from "canvas";
 export default class QRCodeStyling {
     _options: RequiredOptions;
@@ -10,11 +10,14 @@ export default class QRCodeStyling {
     _svg?: SVGElement;
     _qr?: QRCode;
     _extension?: ExtensionFunction;
+    _pluginManager: PluginManager<QRCodeStyling>;
     _canvasDrawingPromise?: Promise<void>;
     _svgDrawingPromise?: Promise<void>;
     constructor(options?: Partial<Options>);
     static _clearContainer(container?: HTMLElement): void;
     _setupSvg(): void;
+    _setupPlugins(): Promise<void>;
+    registerPlugin(pluginClass: any): void;
     _setupCanvas(): void;
     _getElement(extension?: FileExtension): Promise<HTMLCanvasElement | NodeCanvas | SVGElement | undefined>;
     update(options?: Partial<Options>): void;

@@ -57,6 +57,10 @@ export interface QRCode {
     createASCII(cellSize?: number, margin?: number): string;
     renderTo2dContext(context: CanvasRenderingContext2D, cellSize?: number): void;
 }
+export type PluginOptions = {
+    name: string;
+    options?: UnknownObject;
+};
 export type Options = {
     type?: DrawType;
     shape?: ShapeType;
@@ -100,6 +104,7 @@ export type Options = {
         color?: string;
         gradient?: Gradient;
     };
+    plugins?: PluginOptions[];
 };
 export type FilterFunction = (row: number, col: number) => boolean;
 export type DownloadOptions = {
@@ -128,3 +133,30 @@ export type RotateFigureArgs = {
 };
 export type GetNeighbor = (x: number, y: number) => boolean;
 export type ExtensionFunction = (svg: SVGElement, options: Options) => void;
+export interface IPluginTemplate<T> {
+    new (...args: any[]): PluginClass<T>;
+}
+export declare abstract class PluginTemplate<T> {
+    abstract name: string;
+    _options: UnknownObject;
+    app: T;
+    isLoaded: boolean;
+    constructor(app: T);
+    abstract load(): Promise<void>;
+    abstract unload(): Promise<void>;
+    getConfig(): UnknownObject;
+    updateConfig(newConfig?: UnknownObject): void;
+    abstract render(): Promise<void>;
+}
+export type PluginClass<T> = PluginTemplate<T> & {
+    new (...args: any[]): PluginClass<T>;
+};
+export declare class PluginManager<T> {
+    private _registeredPlugins;
+    private _loadedPlugins;
+    register(plugin: PluginClass<T>): void;
+    getPlugin(pluginClassName: string): PluginClass<T> | null;
+    getLoadedPlugin(pluginClassName: string): PluginClass<T> | null;
+    load(plugin: PluginClass<T>): Promise<void>;
+    unloadAll(): Promise<void>;
+}

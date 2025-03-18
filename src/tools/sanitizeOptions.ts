@@ -73,5 +73,9 @@ export default function sanitizeOptions(options: RequiredOptions): RequiredOptio
     }
   }
 
+  if (newOptions.plugins){
+    newOptions.plugins = [...newOptions.plugins];
+  }
+
   return newOptions;
 }

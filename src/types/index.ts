@@ -108,6 +108,12 @@ export interface QRCode {
   renderTo2dContext(context: CanvasRenderingContext2D, cellSize?: number): void;
 }
 
+
+export type PluginOptions = {
+  name: string;
+  options?: UnknownObject;
+};
+
 export type Options = {
   type?: DrawType;
   shape?: ShapeType;
@@ -151,6 +157,7 @@ export type Options = {
     color?: string;
     gradient?: Gradient;
   };
+  plugins?: PluginOptions[];
 };
 
 export type FilterFunction = (row: number, col: number) => boolean;
@@ -186,3 +193,89 @@ export type RotateFigureArgs = {
 export type GetNeighbor = (x: number, y: number) => boolean;
 
 export type ExtensionFunction = (svg: SVGElement, options: Options) => void;
+
+export interface IPluginTemplate<T> {
+  new (...args: any[]): PluginClass<T>;
+}
+export abstract class PluginTemplate<T> {
+  // "name" must be same as class name
+  abstract name: string;
+
+  _options: UnknownObject;
+  app: T;
+  isLoaded: boolean = false;
+
+  constructor(app: T) {
+    this.app = app;
+    this._options = {};
+  }
+
+  abstract load(): Promise<void>;
+  abstract unload(): Promise<void>;
+  getConfig(): UnknownObject {
+    return this._options;
+  }
+  updateConfig(newConfig?: UnknownObject): void {
+    if (!newConfig){
+      return;
+    }
+    this._options = newConfig;
+  }
+  abstract render(): Promise<void>;
+}
+
+// export type PluginClass = typeof PluginTemplate;
+export type PluginClass<T> = PluginTemplate<T> & { new(...args: any[]): PluginClass<T> };
+
+export class PluginManager<T> {
+  private _registeredPlugins: PluginClass<T>[] = [];
+  private _loadedPlugins: PluginClass<T>[] = [];
+  
+  register(plugin: PluginClass<T>) {
+    // console.error('Pushing plugin to plugin manager: ', plugin);
+    this._registeredPlugins.push(plugin);
+  }
+  
+  getPlugin(pluginClassName: string): PluginClass<T> | null {
+    let plugin = this._registeredPlugins.find(plugin => plugin.name === pluginClassName);
+    if (!plugin) 
+      return null;
+    
+    return plugin;
+  }
+  
+  getLoadedPlugin(pluginClassName: string): PluginClass<T> | null {
+    let plugin = this._loadedPlugins.find(plugin => plugin.name === pluginClassName);
+    if (!plugin) 
+      return null;
+    
+    return plugin;
+  }
+  
+  async load(plugin: PluginClass<T>) {
+    // console.error('Loaded plugins: ', this._loadedPlugins);
+    const loadedPlugin = this.getLoadedPlugin(plugin.name);
+    if (!loadedPlugin){
+      this._loadedPlugins.push(plugin);
+      await plugin.load();
+    }
+  }
+  
+  // async unload(pluginName: string) {
+  //   let plugin = this._loadedPlugins.find(plugin => plugin.name === pluginName);
+  //   if (!plugin) 
+  //     return false;
+
+  //   await plugin.unload();
+    
+  //   return true;
+  // }
+
+  async unloadAll() {
+    for (let plugin of this._loadedPlugins) {
+      await plugin.unload();
+    }
+    this._loadedPlugins = [];
+  }
+}
+
